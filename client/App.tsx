@@ -8,6 +8,7 @@ import { ApolloClient, InMemoryCache } from '@apollo/client';
 import client from './apollo';
 //import your screen from
 import Post from './screens/Post';
+import Hi from './screens/Hi';
 
 
 const Stack = createNativeStackNavigator();
@@ -18,6 +19,7 @@ const App = () => {
     <NavigationContainer>
       <Stack.Navigator initialRouteName='Post' >
         <Stack.Screen name='Post' component={Post} options={{headerShown: false}} />
+        <Stack.Screen name='Hi' component={Hi} />
       </Stack.Navigator>
     </NavigationContainer>
     </ApolloProvider>

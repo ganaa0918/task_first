@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useQuery, gql } from '@apollo/client';
-import { Avatar, Card, IconButton, Button, Portal, Modal, TextInput, Provider } from 'react-native-paper';
+import { Card, Button, Portal, Modal, TextInput, Provider } from 'react-native-paper';
 
 const GET_POSTS = gql`
 query GetPosts {
@@ -30,14 +30,19 @@ export default function Post() {
   const [visible, setVisible] = useState(false);
   const [editedName, setEditedName] = useState('');
   const [editedTitle, setEditedTitle] = useState('');
-  const {data,loading, error} = useQuery(GET_POSTS)
-  if (loading) {
-    return <Text>Loading...</Text>;
-  }
 
-  if (error) {
-    return <Text>Error: {error.message}</Text>;
+  const navigation =  useNavigation();
+  const Press=()=> {
+    navigation.navigate('Hi')
   }
+  // const {data,loading, error} = useQuery(GET_POSTS)
+  // if (loading) {
+  //   return <Text>Loading...</Text>;
+  // }
+
+  // if (error) {
+  //   return <Text>Error: {error.message}</Text>;
+  // }
 
   const showModal = (name, title) => {
     setEditedName(name); // Set the initial value of the name in the modal
@@ -52,18 +57,18 @@ export default function Post() {
     <Provider>
       <View style={styles.container}>
         <View style={styles.create}>
-          <TouchableOpacity>
-            <Button mode="contained">Create</Button>
+          <TouchableOpacity onPress={Press}>
+            <Button mode="contained">Үүсгэх</Button>
           </TouchableOpacity>
         </View>
-        {data.map((post) => (
+        {item.map((post) => (
           <Card key={post.id} style={styles.card}>
             <Card.Title
               title={post.name}
               subtitle={post.title}
               right={(props) => (
-                <Button mode="contained" onPress={() => showModal(post.name, post.title)}>
-                  Edit
+                <Button mode="contained" onPress={() => showModal(post.name, post.title)} style={styles.ed}>
+                  Засах
                 </Button>
               )}
             />
@@ -102,6 +107,9 @@ const styles = StyleSheet.create({
   },
   card: {
     marginBottom: 20,
+  },
+  ed: {
+    marginRight: 20
   }
 });
 
