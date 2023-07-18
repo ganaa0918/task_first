@@ -101,6 +101,7 @@ const styles = StyleSheet.create({
   container: {
     justifyContent: 'center',
     padding: 20,
+    marginTop: 30,
   },
   create: {
     paddingBottom:20
