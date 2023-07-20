@@ -2,31 +2,12 @@ import React, { useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useQuery, gql, useMutation } from '@apollo/client';
-import { Card, Button, Portal, Modal, TextInput, Text, PaperProvider, } from 'react-native-paper';
+import { Card, Button, Portal, Modal, TextInput, Text, PaperProvider, ActivityIndicator, MD2Colors } from 'react-native-paper';
 import { Searchbar } from 'react-native-paper';
 
-const GET_POSTS = gql`
-  query allPosts {
-    posts {
-      count
-      data {
-        id
-        title
-        content
-      }
-    }
-  }
-`;
-
-const UPDATE_POST = gql`
-  mutation updatePost($id: ID!, $name: String!, $title: String!) {
-    updatePost(id: $id, name: $name, title: $title) {
-      id
-      name
-      title
-    }s
-  }
-`;
+//import graphql queries
+import { GET_POSTS } from '../graphql/getPost';
+import { UPDATE_POST } from '../graphql/updatePst';
 
 const item = [
   {
@@ -42,41 +23,75 @@ const item = [
 ];
 export default function Post() {
   const [visible, setVisible] = useState(false);
-  const [editedName, setEditedName] = useState('');
+  const [editedContent, seteditedContent] = useState('');
   const [editedTitle, setEditedTitle] = useState('');
   const [postId, setPostId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [updatePost] = useMutation(UPDATE_POST);
+  const icon = "<"
 
-  const onChangeSearch = (query) => {
-    setSearchQuery(query);
+  const onPressback =()=>{
+    navigation.goBack()
+  }
+  const handleUpdate = () => {
+    updatePost({
+      variables: {
+        updatePostId: postId,
+        data: {
+          title: editedTitle,
+          content: editedContent,
+        },
+      },
+    })
+      .then((res) => {
+        // Handle the success response, if needed
+        console.log('Post updated successfully!', res);
+        hideModal();
+      })
+      .catch((error) => {
+        // Handle the error, if needed
+        console.error('Error updating post:', error);
+      });
   };
 
   const navigation = useNavigation();
   const Press = () => {
-    navigation.navigate('Hi');
+    navigation.navigate('Create');
   };
 
-  const { data, loading, error } = useQuery(GET_POSTS);
+  // const { data, loading, error } = useQuery(GET_POSTS, {
+  //   fetchPolicy: 'no-cache'
+  // });
 
-  if (loading) {
-    return <Text>Loading...</Text>;
-  }
+  // if (loading) {
+  //   return <ActivityIndicator animating={true} color={MD2Colors.red800} />;
+  // }
 
-  if (error) {
-    return <Text>Error: {error.message}</Text>;
-  }
+  // if (error) {
+  //   return <Text>Error: {error.message}</Text>;
+  // }
 
-  const filteredPosts = data?.posts?.data?.filter((post) => {
+  //   const filteredPosts = data?.posts?.data?.filter((post) => {
+  //   const searchLower = searchQuery.toLowerCase();
+  //   return (
+  //     post.title.toLowerCase().includes(searchLower) ||
+  //     post.content.toLowerCase().includes(searchLower)
+  //   );
+  // });
+  const filteredPosts = item.filter((post) => {
     const searchLower = searchQuery.toLowerCase();
     return (
       post.title.toLowerCase().includes(searchLower) ||
       post.content.toLowerCase().includes(searchLower)
     );
   });
+  const onChangeSearch = (query) => {
+    setSearchQuery(query);
+  };
 
   const showModal = (id, content, title) => {
     setPostId(id);
-    setEditedName(content); // Set the initial value of the name in the modal
+    seteditedContent(content); // Set the initial value of the name in the modal
     setEditedTitle(title); // Set the initial value of the title in the modal
     setVisible(true);
   };
@@ -89,21 +104,32 @@ export default function Post() {
     <PaperProvider >
       <View style={styles.container}>
         <ScrollView>
+        <TouchableOpacity onPress={onPressback}
+        style={styles.roundButton1}>
+        <Text>{icon}</Text>
+      </TouchableOpacity>
           <View style={styles.create}>
-            <TouchableOpacity onPress={Press}>
-              <Button mode="contained">Үүсгэх</Button>
+            <TouchableOpacity onPress={Press} >
+              <View style={styles.roundbtn}>
+              <Text style={{fontSize: 30, color: 'white'}}>+</Text>
+              </View>
             </TouchableOpacity>
           </View>
-          <Searchbar
+          <View style={styles.togo}>
+          <View style={styles.searchContainer}>
+          <TextInput
+            mode='outlined'
             placeholder="Search"
             onChangeText={onChangeSearch}
-            // value={searchQuery}
+            value={searchQuery}
+            style={styles.search}
           />
+          </View>
           {filteredPosts.map((post) => (
             <Card key={post.id} style={styles.card}>
               <Card.Title
-                title={post.content}
-                subtitle={post.title}
+                title={post.title}
+                subtitle={post.content}
                 right={(props) => (
                   <Button
                     mode="contained"
@@ -116,22 +142,24 @@ export default function Post() {
               />
             </Card>
           ))}
+          </View>
         </ScrollView>
 
         <Portal>
           <Modal visible={visible} onDismiss={hideModal} contentContainerStyle={containerStyle}>
             <TextInput
               label="content"
-              value={editedName}
-              onChangeText={(text) => setEditedName(text)}
+              value={editedContent}
+              onChangeText={(text) => seteditedContent(text)}
             />
             <TextInput
               label="Title"
               value={editedTitle}
               onChangeText={(text) => setEditedTitle(text)}
             />
-            <Button mode="contained" onPress={hideModal}>
-              Save
+
+            <Button mode="contained" onPress={updatePost}>
+              Хадгалах
             </Button>
           </Modal>
         </Portal>
@@ -142,9 +170,10 @@ export default function Post() {
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     justifyContent: 'center',
-    padding: 20,
-    marginTop: 30,
+    backgroundColor: 'white',
+    padding: 10
   },
   create: {
     paddingBottom: 20,
@@ -155,4 +184,38 @@ const styles = StyleSheet.create({
   ed: {
     marginRight: 20,
   },
+  roundButton1: {
+    width: 35,
+    height: 35,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 100,
+    borderColor: '#CFCFCF',
+    borderWidth: 0.5,
+    position: 'absolute',
+    left: 44,
+    top: 48
+  },
+
+  roundbtn: {
+    width: 75,
+    height: 75  ,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 40,
+    position: 'absolute',
+    left: 275,
+    top:600,
+    backgroundColor:'#6B4FAA'
+  },
+  togo: {
+    },
+    searchContainer: {
+      paddingHorizontal: 20,
+      paddingBottom:20
+    },
+    
+    search: {
+      borderRadius: 20, // Set the desired border radius value here
+    },
 });
