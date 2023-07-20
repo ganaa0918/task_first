@@ -16,12 +16,12 @@ const Stack = createNativeStackNavigator();
 const App = () => {
   return (
     <ApolloProvider client={client}>
-    <NavigationContainer>
-      <Stack.Navigator initialRouteName='Post' >
-        <Stack.Screen name='Post' component={Post} options={{headerShown: false}} />
-        <Stack.Screen name='Hi' component={Hi} />
-      </Stack.Navigator>
-    </NavigationContainer>
+      <NavigationContainer>
+        <Stack.Navigator initialRouteName='Post' >
+          <Stack.Screen name='Post' component={Post} options={{ headerShown: false }} />
+          <Stack.Screen name='Hi' component={Hi} />
+        </Stack.Navigator>
+      </NavigationContainer>
     </ApolloProvider>
   )
 }
